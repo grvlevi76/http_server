@@ -1,138 +1,101 @@
 # http_server    
 
-# Simple Multithreaded HTTP Server in C
+# Multithreaded HTTP Server (C)
 
-A lightweight multithreaded HTTP server built in C that serves static HTML files.
-This project demonstrates how socket programming works under the hood of web servers — from handling TCP connections to sending HTTP responses manually.
+A simple multithreaded HTTP server written in C that serves static HTML files over **IPv4**.
+This project demonstrates the low-level working of TCP-based HTTP communication — from socket creation and binding to sending valid HTTP responses to connected web clients.
 
 ---
 
-## 📘 Overview
+## 🧠 Overview
 
-This server accepts multiple simultaneous client connections (like web browsers) using `fork()` to handle each client in a separate process.
-It supports **only IPv4** connections and is designed to send **only HTML files** in response to HTTP requests.
+This server is built using the **Berkeley socket API** and is capable of handling multiple clients simultaneously using the `fork()` system call (each client connection is handled in a separate process).
 
-The goal is simplicity: understand how a real server talks to a browser using raw sockets, without any heavy frameworks or libraries.
+The server listens for HTTP requests (from browsers or other HTTP clients) and responds with an HTML file (`index.html` by default).
 
 ---
 
 ## ⚙️ Features
 
-* **Multithreaded (via `fork`)** – can handle multiple clients at the same time.
-* **Static HTML Serving** – responds to HTTP requests by sending an HTML file.
-* **IPv4 Only** – listens for connections over IPv4.
-* **Client IP Display** – prints the address of each connected client.
-* **Basic HTTP Response Handling** – sends correct HTTP headers for HTML content.
+* **Multithreaded handling** – serves multiple clients at the same time using `fork()`.
+* **IPv4-based communication** – designed specifically for IPv4 HTTP requests.
+* **Static HTML serving** – sends only `.html` files as HTTP responses.
+* **Client address logging** – displays the IP address of each connected client.
+* **Proper HTTP response header** – sends a minimal but valid `HTTP/1.1 200 OK` response.
 
 ---
 
-## 🧠 How It Works
-
-1. **Socket Creation:**
-   The server creates a TCP socket using `socket(AF_INET, SOCK_STREAM, 0)`.
-
-2. **Binding:**
-   It binds the socket to port **8080** using `bind()`.
-
-3. **Listening:**
-   The server listens for incoming connections with `listen()`.
-
-4. **Accepting Clients:**
-   When a client connects, `accept()` returns a new socket for that client.
-   The server prints the client’s IPv4 address.
-
-5. **Handling Clients:**
-   Each client is handled in a separate process (via `fork()`).
-   The child process:
-
-   * Sends a simple HTTP header.
-   * Reads the `index.html` file.
-   * Sends it to the client.
-   * Closes the connection.
-
-6. **Response:**
-   The browser receives the HTTP response and renders the HTML page.
-
----
-
-## 🖥️ Example Output
-
-When you run the server, you’ll see logs like:
+## 📁 Project Structure
 
 ```
-socket creation successful
-bind to port 8080 successfull
-server is listening to port 8080....
-
-client(127.0.0.1) connected
-html file send successfully to client
-client disconnected
+.
+├── server.c        # Main source file for the HTTP server
+├── index.html      # HTML file served to clients
+└── README.md       # Documentation file
 ```
 
 ---
 
-## 📂 Project Structure
+## 🧩 How It Works
 
-```
-├── server.c        # The main server code
-├── index.html      # The HTML file served to clients
-└── README.md       # Project documentation
-```
+1. The server creates a TCP socket using `socket(AF_INET, SOCK_STREAM, 0)`.
+2. It binds to port **8080** on all network interfaces (`INADDR_ANY`).
+3. It listens for incoming connections using `listen()`.
+4. When a client connects:
+
+   * The server prints the client’s IP address.
+   * A new process (via `fork()`) is created to handle that client.
+   * The child process sends the HTTP header and the contents of `index.html`.
+   * After sending, the client connection is closed.
+5. The parent process continues listening for new connections.
 
 ---
 
-## 🚀 How to Run
+## 🧪 Usage
 
-### 1. Compile the Server
+### 1. Compile
 
 ```bash
 gcc server.c -o server
 ```
 
-### 2. Run the Server
+### 2. Run the server
 
 ```bash
 ./server
 ```
 
-### 3. Test it in a Browser
+### 3. Test it
 
-Open your browser and go to:
+Open your web browser and go to:
 
 ```
 http://localhost:8080
 ```
 
-You should see your `index.html` page load.
+You should see the contents of `index.html`.
 
 ---
 
-## ⚠️ Notes & Limitations
+## 🔒 Limitations
 
-* Only serves `index.html` (no directory traversal or MIME-type detection).
-* Not meant for production use — for learning and demonstration only.
-* Doesn’t support persistent connections or binary file transfers.
-* Browser requests are expected to be well-formed HTTP requests.
-
----
-
-## 🧩 Future Improvements
-
-* Add support for multiple file types (CSS, JS, images).
-* Implement simple routing logic to serve different files based on request path.
-* Add graceful shutdown and better error handling.
-* Replace `fork()` with pthreads for more control over concurrency.
-* Log request details and timestamps.
+* Only supports **HTTP GET requests for HTML files**.
+* No MIME type detection (only `text/html` is sent).
+* Not suitable for production environments — meant for learning purposes only.
+* Does not support IPv6 or HTTPS.
 
 ---
 
-## 📚 Learn More
+## 🚀 Future Improvements
 
-This project touches on:
+* Add thread-based concurrency using `pthread` for better performance.
+* Implement support for multiple file types (CSS, JS, images, etc.).
+* Parse HTTP request headers for better request handling.
+* Add simple logging and error handling mechanisms.
 
-* Socket programming in C
-* Basic HTTP protocol structure
-* Process management (`fork`)
-* Network byte ordering (`htons`, `inet_ntop`)
+---
 
-to go deeper, there's more to read about **epoll**, **select**, or **non-blocking I/O** — the technologies that power modern web servers.
+## 📜 License
+
+This project is open-source under the **MIT License**.
+Feel free to modify and experiment with it for educational purposes.
